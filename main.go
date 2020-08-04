@@ -16,4 +16,21 @@ limitations under the License.
 
 package main
 
-func main() {}
+import (
+	"flag"
+	"log"
+
+	"github.com/pandorasnox/kubelife/pkg/ssh"
+)
+
+func main() {
+	user := flag.String("user", "", "remote server login user")
+	addr := flag.String("addr", "", "remote server address (ip/dns)")
+	flag.Parse()
+
+	ssh, err := ssh.New(*user, *addr, ssh.AgentAuth())
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = ssh
+}
