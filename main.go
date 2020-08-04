@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/pandorasnox/kubelife/pkg/ssh"
@@ -32,5 +33,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = ssh
+	defer ssh.Close()
+
+	out, err := ssh.Exec("ls -al")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(out))
 }
