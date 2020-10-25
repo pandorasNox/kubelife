@@ -17,19 +17,92 @@ limitations under the License.
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/pandorasnox/kubelife/pkg/hetzner"
 	"github.com/pandorasnox/kubelife/pkg/ssh"
+	cli "github.com/urfave/cli/v2"
 )
 
 func main() {
-	user := flag.String("user", "", "remote server login user")
-	addr := flag.String("addr", "", "remote server address (ip/dns)")
-	flag.Parse()
+	// user := flag.String("user", "", "remote server login user")
+	// addr := flag.String("addr", "", "remote server address (ip/dns)")
+	// flag.Parse()
+	// _ = user
+	// _ = addr
 
-	osSetup(*user, *addr)
+	// osSetup(*user, *addr)
+
+	app := &cli.App{
+		Name:  "Kubelife",
+		Usage: "usage: todo",
+		Action: func(c *cli.Context) error {
+			fmt.Println("Hello friend!")
+			return nil
+		},
+		Commands: []*cli.Command{
+			{
+				Name: "hetzner",
+				// Aliases: []string{"h"},
+				Usage: "all hetzner cloud related commands",
+				Subcommands: []*cli.Command{
+					{
+						Name: "status",
+						// Aliases: []string{"s"},
+						Usage: "prints the hetzner status to std.out",
+						Action: func(c *cli.Context) error {
+							err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
+							if err != nil {
+								return err
+							}
+
+							return nil
+						},
+					},
+					{
+						Name: "server",
+						// Aliases: []string{"s"},
+						Usage: "commands related to server",
+						Subcommands: []*cli.Command{
+							{
+								Name: "status",
+								// Aliases: []string{"s"},
+								Usage: "prints the hetzner status to std.out",
+								Action: func(c *cli.Context) error {
+									err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
+									if err != nil {
+										return err
+									}
+
+									return nil
+								},
+							},
+							{
+								Name: "create",
+								// Aliases: []string{"s"},
+								Usage: "creates a new hetzner cloud vm",
+								Action: func(c *cli.Context) error {
+									err := hetzner.Create(os.Getenv("HCLOUD_TOKEN"))
+									if err != nil {
+										return err
+									}
+
+									return nil
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func osSetup(user string, remoteAddrs string) {
