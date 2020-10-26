@@ -92,6 +92,25 @@ func main() {
 									return nil
 								},
 							},
+							{
+								Name: "delete",
+								// Aliases: []string{"s"},
+								Subcommands: []*cli.Command{
+									{
+										Name: "all",
+										// Aliases: []string{"s"},
+										Usage: "deletes all vms",
+										Action: func(c *cli.Context) error {
+											err := hetzner.DeleteAll(os.Getenv("HCLOUD_TOKEN"))
+											if err != nil {
+												return err
+											}
+
+											return nil
+										},
+									},
+								},
+							},
 						},
 					},
 				},

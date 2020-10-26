@@ -18,10 +18,11 @@ func Status(token string) error {
 		// log.Fatalf("error retrieving server: %s\n", err)
 		return fmt.Errorf("error retrieving server: %s", err)
 	}
+	_ = serverTypes
 
-	for serverType := range serverTypes {
-		log.Printf("server type: %v\n", serverType)
-	}
+	// for serverType := range serverTypes {
+	// 	log.Printf("server type: %v\n", serverType)
+	// }
 	// log.Printf("server types: %v\n", serverTypes)
 
 	servers, err := client.Server.All(context.Background())
@@ -38,7 +39,25 @@ func Status(token string) error {
 
 // Create a new opinionated hetzner cloud server
 func Create(token string) error {
-	// client := hcloud.NewClient(hcloud.WithToken(token))
+	startAfterCreate := true
+	automount := false
+	opts := hcloud.ServerCreateOpts{
+		Name: "test1",
+		ServerType: &hcloud.ServerType{
+			Name: "cx11",
+		},
+		Image: &hcloud.Image{
+			Name: "ubuntu-20.04",
+		},
+		Labels: map[string]string{
+			"a": "b",
+		},
+		StartAfterCreate: &startAfterCreate,
+		Automount:        &automount,
+	}
+	_ = opts
+
+	client := hcloud.NewClient(hcloud.WithToken(token))
 
 	// stc := client.ServerType.All()
 
@@ -46,7 +65,31 @@ func Create(token string) error {
 	// 	Name:       "test",
 	// 	ServerType: &hcloud.ServerType{},
 	// }
-	// scResult, res, err := client.Server.Create(context.Background(), svrOps)
+	scResult, res, err := client.Server.Create(context.Background(), opts)
+	if err != nil {
+		return fmt.Errorf("couldn't create  server: %s", err)
+	}
+
+	log.Printf("created server: %v\n", scResult)
+	log.Printf("created server response: %v\n", res)
+
+	return nil
+}
+
+func DeleteAll(token string) error {
+	client := hcloud.NewClient(hcloud.WithToken(token))
+
+	servers, err := client.Server.All(context.Background())
+	if err != nil {
+		// log.Errorf("%s", err)
+		// log.Fatalf("error retrieving server: %s\n", err)
+		return fmt.Errorf("error retrieving server: %s", err)
+	}
+
+	for i := range servers {
+		server := servers[i]
+		client.Server.Delete(context.Background(), server)
+	}
 
 	return nil
 }
