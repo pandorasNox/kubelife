@@ -18,8 +18,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
+
+	"github.com/pandorasnox/kubelife/pkg/cluster"
+	"gopkg.in/yaml.v2"
 
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
 	"github.com/pandorasnox/kubelife/pkg/ssh"
@@ -34,6 +38,15 @@ func main() {
 	// _ = addr
 
 	// osSetup(*user, *addr)
+
+	var err error
+
+	clusterCfg, err := loadClusterConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_ = clusterCfg
 
 	app := &cli.App{
 		Name:  "Kubelife",
@@ -118,10 +131,55 @@ func main() {
 		},
 	}
 
-	err := app.Run(os.Args)
+	err = app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func loadClusterConfig() (cluster.Config, error) {
+	// load file
+	f, err := os.Open("cluster.yml")
+	if err != nil {
+		log.Fatalf("open config: %v", err)
+	}
+	defer f.Close()
+
+	fi, err := f.Stat()
+	if err != nil {
+		log.Fatalf("stat config: %v", err)
+	}
+	if fi.Size() == 0 {
+		log.Fatalf("cluster config is empt")
+	}
+
+	// parse/decode file
+	decodedCfg, err := decodeClusterConfig(f)
+	if err != nil {
+		log.Fatalf("parse / decode config: %v", err)
+	}
+
+	//maybe add defaults
+
+	// validate / sanity check file
+	//todo
+
+	return decodedCfg, nil
+}
+
+// LoadConfig load the config from the reader.
+func decodeClusterConfig(r io.Reader) (cluster.Config, error) {
+	d := yaml.NewDecoder(r)
+	d.SetStrict(true)
+
+	cfg := cluster.Config{}
+
+	err := d.Decode(&cfg)
+	if err != nil {
+		return cluster.Config{}, err
+	}
+
+	return cfg, nil
 }
 
 func osSetup(user string, remoteAddrs string) {

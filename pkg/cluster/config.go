@@ -2,26 +2,25 @@ package cluster
 
 // Config for the cluster
 type Config struct {
-	version string
-	cluster Cluster
+	Version string  `yaml:"version"`
+	Cluster Cluster `yaml:"cluster"`
 }
 
 // Cluster related information
 type Cluster struct {
-	name  string
-	nodes servers
+	Name  string  `yaml:"name"`
+	Nodes servers `yaml:"nodes"`
 }
-
-// type servers []server
-// type server struct{}
 
 type servers struct {
-	masters masterServers
-	workers workerServers
+	Master masterServers `yaml:"master"`
+	Worker workerServers `yaml:"worker"`
 }
 
-type masterServers []masterServer
-type masterServer struct{}
+type masterServers []server
 
-type workerServers []workerServer
-type workerServer struct{}
+type workerServers []server
+
+type server struct {
+	Name string `yaml:"name"`
+}
