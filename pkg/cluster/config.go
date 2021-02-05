@@ -18,7 +18,7 @@ type servers struct {
 		Name      string `yaml:"name"`
 		PublicKey string `yaml:"public_key"`
 	} `yaml:"ssh_authorized_keys"`
-	Static []struct{} `yaml:"static"`
+	Static []staticServer `yaml:"static"`
 	Groups struct {
 		Master masterServers `yaml:"master"`
 		Worker workerServers `yaml:"worker"`
@@ -29,8 +29,13 @@ type masterServers []server
 
 type workerServers []server
 
+type staticServer struct {
+	NameAddition            string                  `yaml:"nameAddition"`
+	Role                    string                  `yaml:"role"`
+	ProviderMachineTemplate providerMachineTemplate `yaml:"providerMachineTemplate"`
+}
 type server struct {
-	BaseName                        string                  `yaml:"baseName"`
+	NameAddition                    string                  `yaml:"nameAddition"`
 	Scale                           int                     `yaml:"scale"`
 	EnablePossibilityToProxyKubectl bool                    `yaml:"enablePossibilityToProxyKubectl"`
 	ProviderMachineTemplate         providerMachineTemplate `yaml:"providerMachineTemplate"`
