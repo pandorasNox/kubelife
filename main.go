@@ -126,6 +126,19 @@ func main() {
 							},
 						},
 					},
+					{
+						Name: "locations",
+						// Aliases: []string{"s"},
+						Usage: "prints the hetzner-locations to std.out",
+						Action: func(c *cli.Context) error {
+							err := hetzner.Locations(os.Getenv("HCLOUD_TOKEN"))
+							if err != nil {
+								return err
+							}
+
+							return nil
+						},
+					},
 				},
 			},
 		},

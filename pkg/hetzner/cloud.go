@@ -37,6 +37,23 @@ func Status(token string) error {
 	return nil
 }
 
+func Locations(token string) error {
+	client := hcloud.NewClient(hcloud.WithToken(token))
+
+	locations, err := client.Location.All(context.Background())
+	if err != nil {
+		// log.Errorf("%s", err)
+		// log.Fatalf("error retrieving server: %s\n", err)
+		return fmt.Errorf("error retrieving locations: %s", err)
+	}
+
+	for _, l := range locations {
+		log.Printf("location: %v\n", l)
+	}
+
+	return nil
+}
+
 // Create a new opinionated hetzner cloud server
 func Create(token string) error {
 	startAfterCreate := true
@@ -49,13 +66,22 @@ func Create(token string) error {
 		Image: &hcloud.Image{
 			Name: "ubuntu-20.04",
 		},
+		// SSHKeys          []*SSHKey
+		// Location         *Location
+		// Datacenter       *Datacenter // is discouraged
+		// UserData         string
+		StartAfterCreate: &startAfterCreate,
 		Labels: map[string]string{
 			"a": "b",
 		},
-		StartAfterCreate: &startAfterCreate,
-		Automount:        &automount,
+		Automount: &automount,
+		// Volumes          []*Volume
+		// Networks         []*Network
 	}
-	_ = opts
+	location := ""
+	if location != "" {
+		opts.Location = &hcloud.Location{Name: location}
+	}
 
 	client := hcloud.NewClient(hcloud.WithToken(token))
 
