@@ -2,9 +2,9 @@ package cluster
 
 // Config for the cluster
 type Config struct {
-	Version     string   `yaml:"version"`
-	Cluster     Cluster  `yaml:"cluster"`
-	ToolsServer struct{} `yaml:"toolsServer"`
+	Version     string      `yaml:"version"`
+	Cluster     Cluster     `yaml:"cluster"`
+	ToolsServer toolsServer `yaml:"toolsServer"`
 }
 
 // Cluster related information
@@ -40,6 +40,11 @@ type staticServer struct {
 type scalableServer struct {
 	NameAddition            string                  `yaml:"nameAddition"`
 	Scale                   int                     `yaml:"scale"`
+	ProviderMachineTemplate providerMachineTemplate `yaml:"providerMachineTemplate"`
+}
+
+type toolsServer struct {
+	Name                    string                  `yaml:"name"`
 	ProviderMachineTemplate providerMachineTemplate `yaml:"providerMachineTemplate"`
 }
 
