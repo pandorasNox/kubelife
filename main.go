@@ -57,6 +57,19 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			{
+				Name:  "status",
+				Usage: "prints out status of all remote cloud providers",
+				Action: func(c *cli.Context) error {
+					fmt.Println("hetzner clolud status:")
+					err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
+					if err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+			{
 				Name: "hetzner",
 				// Aliases: []string{"h"},
 				Usage: "all hetzner cloud related commands",
