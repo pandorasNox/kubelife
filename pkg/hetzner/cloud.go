@@ -10,31 +10,57 @@ import (
 
 // Status prints an overview status of hetzner cloud to std.out
 func Status(token string) error {
+	backgroundCtx := context.Background()
 	client := hcloud.NewClient(hcloud.WithToken(token))
 
-	serverTypes, err := client.ServerType.All(context.Background())
+	actions, err := Actions(client, backgroundCtx)
+	if err != nil {
+		return fmt.Errorf("error retrieving actions: %s", err)
+	}
+	log.Printf("actions: %v\n", actions)
+
+	serverTypes, err := client.ServerType.All(backgroundCtx)
 	if err != nil {
 		// log.Errorf("%s", err)
 		// log.Fatalf("error retrieving server: %s\n", err)
 		return fmt.Errorf("error retrieving server: %s", err)
 	}
-	_ = serverTypes
+	// _ = serverTypes
 
-	// for serverType := range serverTypes {
-	// 	log.Printf("server type: %v\n", serverType)
-	// }
-	// log.Printf("server types: %v\n", serverTypes)
+	for _, serverTypePointer := range serverTypes {
+		log.Printf("server type pointer . name: %v\n", serverTypePointer.Name)
+		fmt.Println("")
+	}
+	log.Printf("server types: %v\n", serverTypes)
 
+	servers, err := Servers(client, backgroundCtx)
+	if err != nil {
+		return fmt.Errorf("error retrieving server: %s", err)
+	}
+	log.Printf("servers: %v\n", servers)
+
+	return nil
+}
+
+func Actions(client *hcloud.Client, ctx context.Context) ([]*hcloud.Action, error) {
+	actionOpts := hcloud.ActionListOpts{}
+	actions, _, err := client.Action.List(ctx, actionOpts)
+	if err != nil {
+		return []*hcloud.Action{}, err
+	}
+
+	return actions, nil
+}
+
+func Servers(client *hcloud.Client, ctx context.Context) ([]*hcloud.Server, error) {
 	servers, err := client.Server.All(context.Background())
 	if err != nil {
 		// log.Errorf("%s", err)
 		// log.Fatalf("error retrieving server: %s\n", err)
-		return fmt.Errorf("error retrieving server: %s", err)
+		return []*hcloud.Server{}, fmt.Errorf("error retrieving server: %s", err)
 	}
 
-	log.Printf("servers: %v\n", servers)
-
-	return nil
+	return servers, nil
 }
 
 func Locations(token string) error {
