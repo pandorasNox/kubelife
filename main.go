@@ -51,10 +51,10 @@ func main() {
 	app := &cli.App{
 		Name:  "Kubelife",
 		Usage: "usage: todo",
-		Action: func(c *cli.Context) error {
-			fmt.Println("Hello friend!")
-			return nil
-		},
+		// Action: func(c *cli.Context) error {
+		// 	fmt.Println("Hello friend!")
+		// 	return nil
+		// },
 		Commands: []*cli.Command{
 			{
 				Name:  "status",
@@ -69,91 +69,7 @@ func main() {
 					return nil
 				},
 			},
-			{
-				Name: "hetzner",
-				// Aliases: []string{"h"},
-				Usage: "all hetzner cloud related commands",
-				Subcommands: []*cli.Command{
-					{
-						Name: "status",
-						// Aliases: []string{"s"},
-						Usage: "prints the hetzner status to std.out",
-						Action: func(c *cli.Context) error {
-							err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
-							if err != nil {
-								return err
-							}
-
-							return nil
-						},
-					},
-					{
-						Name: "server",
-						// Aliases: []string{"s"},
-						Usage: "commands related to server",
-						Subcommands: []*cli.Command{
-							{
-								Name: "status",
-								// Aliases: []string{"s"},
-								Usage: "prints the hetzner status to std.out",
-								Action: func(c *cli.Context) error {
-									err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
-									if err != nil {
-										return err
-									}
-
-									return nil
-								},
-							},
-							{
-								Name: "create",
-								// Aliases: []string{"s"},
-								Usage: "creates a new hetzner cloud vm",
-								Action: func(c *cli.Context) error {
-									err := hetzner.Create(os.Getenv("HCLOUD_TOKEN"))
-									if err != nil {
-										return err
-									}
-
-									return nil
-								},
-							},
-							{
-								Name: "delete",
-								// Aliases: []string{"s"},
-								Subcommands: []*cli.Command{
-									{
-										Name: "all",
-										// Aliases: []string{"s"},
-										Usage: "deletes all vms",
-										Action: func(c *cli.Context) error {
-											err := hetzner.DeleteAll(os.Getenv("HCLOUD_TOKEN"))
-											if err != nil {
-												return err
-											}
-
-											return nil
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						Name: "locations",
-						// Aliases: []string{"s"},
-						Usage: "prints the hetzner-locations to std.out",
-						Action: func(c *cli.Context) error {
-							err := hetzner.Locations(os.Getenv("HCLOUD_TOKEN"))
-							if err != nil {
-								return err
-							}
-
-							return nil
-						},
-					},
-				},
-			},
+			hetznerCloudCommands(),
 		},
 	}
 
@@ -206,6 +122,94 @@ func decodeClusterConfig(r io.Reader) (cluster.Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func hetznerCloudCommands() *cli.Command {
+	return &cli.Command{
+		Name: "hetzner",
+		// Aliases: []string{"h"},
+		Usage: "all hetzner cloud related commands",
+		Subcommands: []*cli.Command{
+			{
+				Name: "status",
+				// Aliases: []string{"s"},
+				Usage: "prints the hetzner status to std.out",
+				Action: func(c *cli.Context) error {
+					err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
+					if err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+			{
+				Name: "server",
+				// Aliases: []string{"s"},
+				Usage: "commands related to server",
+				Subcommands: []*cli.Command{
+					{
+						Name: "status",
+						// Aliases: []string{"s"},
+						Usage: "prints the hetzner status to std.out",
+						Action: func(c *cli.Context) error {
+							err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
+							if err != nil {
+								return err
+							}
+
+							return nil
+						},
+					},
+					{
+						Name: "create",
+						// Aliases: []string{"s"},
+						Usage: "creates a new hetzner cloud vm",
+						Action: func(c *cli.Context) error {
+							err := hetzner.Create(os.Getenv("HCLOUD_TOKEN"))
+							if err != nil {
+								return err
+							}
+
+							return nil
+						},
+					},
+					{
+						Name: "delete",
+						// Aliases: []string{"s"},
+						Subcommands: []*cli.Command{
+							{
+								Name: "all",
+								// Aliases: []string{"s"},
+								Usage: "deletes all vms",
+								Action: func(c *cli.Context) error {
+									err := hetzner.DeleteAll(os.Getenv("HCLOUD_TOKEN"))
+									if err != nil {
+										return err
+									}
+
+									return nil
+								},
+							},
+						},
+					},
+				},
+			},
+			{
+				Name: "locations",
+				// Aliases: []string{"s"},
+				Usage: "prints the hetzner-locations to std.out",
+				Action: func(c *cli.Context) error {
+					err := hetzner.Locations(os.Getenv("HCLOUD_TOKEN"))
+					if err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+		},
+	}
 }
 
 func osSetup(user string, remoteAddrs string) {
