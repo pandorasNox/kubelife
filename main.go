@@ -70,6 +70,7 @@ func main() {
 				},
 			},
 			hetznerCloudCommands(),
+			toolsServerCommands(),
 		},
 	}
 
@@ -208,6 +209,57 @@ func hetznerCloudCommands() *cli.Command {
 					return nil
 				},
 			},
+		},
+	}
+}
+
+func toolsServerCommands() *cli.Command {
+	return &cli.Command{
+		Name: "toolsServer",
+		Subcommands: []*cli.Command{
+			{
+				Name:  "create",
+				Usage: "creates the toolsServer",
+				Action: func(c *cli.Context) error {
+					err := cluster.ToolsServerCreate(os.Getenv("HCLOUD_TOKEN"))
+					if err != nil {
+						return err
+					}
+
+					// ts, err := cluster.ToolsServer(os.Getenv("HCLOUD_TOKEN"))
+					// if err != nil {
+					// 	return err
+					// }
+
+					// status, err := ts.Create()
+					// if err != nil {
+					// 	return err
+					// }
+
+					// fmt.Println("toolsServer status:", status)
+
+					return nil
+				},
+			},
+			// {
+			// 	Name:  "status",
+			// 	Usage: "prints the toolsServer status to std.out",
+			// 	Action: func(c *cli.Context) error {
+			// 		ts, err := cluster.ToolsServer(os.Getenv("HCLOUD_TOKEN"))
+			// 		if err != nil {
+			// 			return err
+			// 		}
+
+			// 		status, err := ts.Status()
+			// 		if err != nil {
+			// 			return err
+			// 		}
+
+			// 		fmt.Println("toolsServer status:", status)
+
+			// 		return nil
+			// 	},
+			// },
 		},
 	}
 }
