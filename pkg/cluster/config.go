@@ -2,9 +2,8 @@ package cluster
 
 // Config for the cluster
 type Config struct {
-	Version     string      `yaml:"version"`
-	Cluster     Cluster     `yaml:"cluster"`
-	ToolsServer toolsServer `yaml:"toolsServer"`
+	Version string  `yaml:"version"`
+	Cluster Cluster `yaml:"cluster"`
 }
 
 // Cluster related information
@@ -14,6 +13,7 @@ type Cluster struct {
 }
 
 type servers struct {
+	ToolsServer       toolsServer `yaml:"toolsServer"`
 	SSHAuthorizedKeys []struct {
 		Name      string `yaml:"name"`
 		PublicKey string `yaml:"public_key"`
@@ -49,7 +49,8 @@ type toolsServer struct {
 }
 
 type providerMachineTemplate struct {
-	HetznerCloud hetznerCloudMachineProvider `yaml:"hetznerCloud"`
+	HetznerCloud hetznerCloudMachineProvider      `yaml:"hetznerCloud"`
+	Digitalocean digitaloceanCloudMachineProvider `yaml:"digitalocean"`
 }
 
 type hetznerCloudMachineProvider struct {
@@ -59,4 +60,8 @@ type hetznerCloudMachineProvider struct {
 	} `yaml:"image"`
 	Location string            `yaml:"location"`
 	Labels   map[string]string `yaml:"labels"`
+}
+
+type digitaloceanCloudMachineProvider struct {
+	ServerType string `yaml:"serverType"`
 }

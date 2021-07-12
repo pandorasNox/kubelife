@@ -46,8 +46,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_ = clusterCfg
-
 	app := &cli.App{
 		Name:  "Kubelife",
 		Usage: "usage: todo",
@@ -69,6 +67,7 @@ func main() {
 					return nil
 				},
 			},
+			clusterCommands(clusterCfg),
 			hetznerCloudCommands(),
 			toolsServerCommands(),
 		},
@@ -260,6 +259,25 @@ func toolsServerCommands() *cli.Command {
 			// 		return nil
 			// 	},
 			// },
+		},
+	}
+}
+
+func clusterCommands(ccfg cluster.Config) *cli.Command {
+	return &cli.Command{
+		Name: "cluster",
+		Subcommands: []*cli.Command{
+			{
+				Name:  "init",
+				Usage: "initializes the infrastructure based on cluster.yaml",
+				Action: func(c *cli.Context) error {
+					err := cluster.Init(ccfg)
+					if err != nil {
+						return fmt.Errorf("couldn't init cluster: %s", err)
+					}
+					return nil
+				},
+			},
 		},
 	}
 }
