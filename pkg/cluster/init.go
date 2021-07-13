@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+
+	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/pandorasnox/kubelife/pkg/hetzner"
 )
 
-func Init(ccfg Config) error {
+func Init(ccfg Config, hcloud_token string) error {
 	var err error
 
-	err = initToolsServer(ccfg)
+	err = initToolsServer(ccfg, hcloud_token)
 	if err != nil {
 		return fmt.Errorf("couldn't initiate toolsServer: %s", err)
 	}
@@ -18,7 +21,7 @@ func Init(ccfg Config) error {
 	return nil
 }
 
-func initToolsServer(ccfg Config) error {
+func initToolsServer(ccfg Config, hcloud_token string) error {
 	cToolsServer := ccfg.Cluster.Nodes.ToolsServer
 	if reflect.ValueOf(cToolsServer).IsZero() {
 		log.Println("skip toolsServer initialisation, given empty value(s)")
@@ -47,10 +50,33 @@ func initToolsServer(ccfg Config) error {
 		return fmt.Errorf("couldn't extract ProviderMachineTemplate: %s", err)
 	}
 
+	toolsServerName := fmt.Sprintf("%s%s", ccfg.Cluster.Name, "-clustertools")
+	_ = toolsServerName
+
 	switch provider.Interface().(type) {
-	case hetznerCloudMachineProvider:
-		//todo: continue
-		fmt.Println("lets use the hetznerCloudMachineProvider")
+	case hetznerCloudMachine:
+		hcm, _ := provider.Interface().(hetznerCloudMachine)
+
+		//map hetznerCloudMachine => to => hcloud.ServerCreateOpts
+		hcScOps := hcloud.ServerCreateOpts{
+			Name: toolsServerName,
+			ServerType: &hcloud.ServerType{
+				Name: hcm.ServerType,
+			},
+			Image: &hcloud.Image{
+				Name: hcm.Image.Name,
+			},
+			Labels: map[string]string{
+				"a": "b",
+			},
+		}
+
+		//if toolsServer already exists, skip (add flag to force re-creation)
+
+		err := hetzner.Create(hcloud_token, hcScOps, toolsServerName)
+		if err != nil {
+			return fmt.Errorf("couldn't create toolsServer as a hetznerCloudMachine: %s", err)
+		}
 	}
 
 	return nil

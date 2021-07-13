@@ -49,11 +49,11 @@ type toolsServer struct {
 }
 
 type providerMachineTemplate struct {
-	HetznerCloud hetznerCloudMachineProvider      `yaml:"hetznerCloud"`
-	Digitalocean digitaloceanCloudMachineProvider `yaml:"digitalocean"`
+	HetznerCloud hetznerCloudMachine `yaml:"hetznerCloud"`
+	Digitalocean digitaloceanMachine `yaml:"digitalocean"`
 }
 
-type hetznerCloudMachineProvider struct {
+type hetznerCloudMachine struct {
 	ServerType string `yaml:"serverType"`
 	Image      struct {
 		Name string `yaml:"name"`
@@ -62,6 +62,6 @@ type hetznerCloudMachineProvider struct {
 	Labels   map[string]string `yaml:"labels"`
 }
 
-type digitaloceanCloudMachineProvider struct {
+type digitaloceanMachine struct {
 	ServerType string `yaml:"serverType"`
 }

@@ -166,7 +166,7 @@ func hetznerCloudCommands() *cli.Command {
 						// Aliases: []string{"s"},
 						Usage: "creates a new hetzner cloud vm",
 						Action: func(c *cli.Context) error {
-							err := hetzner.Create(os.Getenv("HCLOUD_TOKEN"))
+							err := hetzner.CreateSingle(os.Getenv("HCLOUD_TOKEN"))
 							if err != nil {
 								return err
 							}
@@ -271,7 +271,8 @@ func clusterCommands(ccfg cluster.Config) *cli.Command {
 				Name:  "init",
 				Usage: "initializes the infrastructure based on cluster.yaml",
 				Action: func(c *cli.Context) error {
-					err := cluster.Init(ccfg)
+					hcloud_token := os.Getenv("HCLOUD_TOKEN")
+					err := cluster.Init(ccfg, hcloud_token)
 					if err != nil {
 						return fmt.Errorf("couldn't init cluster: %s", err)
 					}

@@ -80,8 +80,33 @@ func Locations(token string) error {
 	return nil
 }
 
+func Create(token string, hcScOps hcloud.ServerCreateOpts, serverName string) error {
+	startAfterCreate := true
+	automount := false
+
+	hcScOps.StartAfterCreate = &startAfterCreate
+	hcScOps.Automount = &automount
+
+	location := ""
+	if location != "" {
+		hcScOps.Location = &hcloud.Location{Name: location}
+	}
+
+	client := hcloud.NewClient(hcloud.WithToken(token))
+
+	scResult, res, err := client.Server.Create(context.Background(), hcScOps)
+	if err != nil {
+		return fmt.Errorf("couldn't create  server: %s", err)
+	}
+
+	log.Printf("created server: %v\n", scResult)
+	log.Printf("created server response: %v\n", res)
+
+	return nil
+}
+
 // Create a new opinionated hetzner cloud server
-func Create(token string) error {
+func CreateSingle(token string) error {
 	startAfterCreate := true
 	automount := false
 	opts := hcloud.ServerCreateOpts{
