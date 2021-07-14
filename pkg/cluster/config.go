@@ -1,5 +1,9 @@
 package cluster
 
+import (
+	"fmt"
+)
+
 // Config for the cluster
 type Config struct {
 	Version string  `yaml:"version"`
@@ -58,10 +62,32 @@ type hetznerCloudMachine struct {
 	Image      struct {
 		Name string `yaml:"name"`
 	} `yaml:"image"`
-	Location string            `yaml:"location"`
-	Labels   map[string]string `yaml:"labels"`
+	Location         string `yaml:"location"`
+	AdditionalLabels Labels `yaml:"additionalLabels"`
 }
 
 type digitaloceanMachine struct {
 	ServerType string `yaml:"serverType"`
+}
+
+type Labels map[string]string
+
+func MergeLabels(left Labels, right Labels) (out Labels, warnings []string) {
+	out = Labels{}
+
+	for k, v := range left {
+		out[k] = v
+	}
+
+	for k, v := range right {
+		if _, ok := out[k]; ok {
+			warnMsg := fmt.Sprintf("SKIPPING THIS ACTION: you try to add a label that already exists: \"%s: %s\" ({key: \"%s\", value: \"%s\"})", k, v, k, v)
+			warnings = append(warnings, warnMsg)
+			continue
+		}
+
+		out[k] = v
+	}
+
+	return out, warnings
 }

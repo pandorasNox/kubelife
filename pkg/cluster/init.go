@@ -3,11 +3,11 @@ package cluster
 import (
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
+	log "github.com/sirupsen/logrus"
 )
 
 func Init(ccfg Config, hcloud_token string) error {
@@ -57,6 +57,18 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 	case hetznerCloudMachine:
 		hcm, _ := provider.Interface().(hetznerCloudMachine)
 
+		creatorLabels := Labels{
+			"kubelife_owner":   "kubelife",
+			"kubelife_creator": "kubelife",
+		}
+
+		mergedLabels, warnings := MergeLabels(creatorLabels, hcm.AdditionalLabels)
+		if len(warnings) != 0 {
+			for _, v := range warnings {
+				log.Warn(v)
+			}
+		}
+
 		//map hetznerCloudMachine => to => hcloud.ServerCreateOpts
 		hcScOps := hcloud.ServerCreateOpts{
 			Name: toolsServerName,
@@ -66,9 +78,7 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 			Image: &hcloud.Image{
 				Name: hcm.Image.Name,
 			},
-			Labels: map[string]string{
-				"a": "b",
-			},
+			Labels: mergedLabels,
 		}
 
 		//if toolsServer already exists, skip (add flag to force re-creation)

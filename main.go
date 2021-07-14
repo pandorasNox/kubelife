@@ -19,7 +19,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"github.com/pandorasnox/kubelife/pkg/cluster"
@@ -27,6 +26,7 @@ import (
 
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
 	"github.com/pandorasnox/kubelife/pkg/ssh"
+	log "github.com/sirupsen/logrus"
 	cli "github.com/urfave/cli/v2"
 )
 
