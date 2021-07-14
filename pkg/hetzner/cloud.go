@@ -39,6 +39,10 @@ func Status(token string) error {
 	}
 	log.Printf("servers: %v\n", servers)
 
+	for _, server := range servers {
+		fmt.Printf("server name: \"%s\", status: \"%s\"", server.Name, server.Status)
+	}
+
 	return nil
 }
 
