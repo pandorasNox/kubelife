@@ -2,8 +2,11 @@ package hetzner
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
+	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
@@ -98,13 +101,12 @@ func Create(token string, hcScOps hcloud.ServerCreateOpts, serverName string) er
 
 	client := hcloud.NewClient(hcloud.WithToken(token))
 
-	scResult, res, err := client.Server.Create(context.Background(), hcScOps)
+	_, _, err := client.Server.Create(context.Background(), hcScOps)
 	if err != nil {
 		return fmt.Errorf("couldn't create  server: %s", err)
 	}
 
-	log.Printf("created server: %v\n", scResult)
-	log.Printf("created server response: %v\n", res)
+	log.Printf("created server: \"%s\"\n", serverName)
 
 	return nil
 }
@@ -155,6 +157,46 @@ func CreateSingle(token string) error {
 	log.Printf("created server response: %v\n", res)
 
 	return nil
+}
+
+func WaitForServerRunning(token string, serverName string, timeoutSeconds time.Duration) error {
+	log.Infof("waiting for server \"%s\" is running", serverName)
+
+	backgroundCtx := context.Background()
+	client := hcloud.NewClient(hcloud.WithToken(token))
+
+	if timeoutSeconds <= 0 {
+		return errors.New("seconds needs to be larger than 0")
+	}
+
+	start := time.Now()
+	end := start.Add(timeoutSeconds * time.Second)
+
+	for {
+		now := time.Now()
+		if !inTimeSpan(start, end, now) {
+			return fmt.Errorf("reached timeout of '%s' seconds", timeoutSeconds)
+		}
+
+		server, _, err := client.Server.GetByName(backgroundCtx, serverName)
+		if err != nil {
+			return fmt.Errorf("error retrieving server with name '%s': %s", serverName, err)
+		}
+
+		if server.Status == hcloud.ServerStatusRunning {
+			break
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+
+	log.Infof("server \"%s\" is now running", serverName)
+
+	return nil
+}
+
+func inTimeSpan(start, end, check time.Time) bool {
+	return check.After(start) && check.Before(end)
 }
 
 func DeleteAll(token string) error {

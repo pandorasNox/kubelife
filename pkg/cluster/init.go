@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
@@ -51,7 +52,6 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 	}
 
 	toolsServerName := fmt.Sprintf("%s%s", ccfg.Cluster.Name, "-clustertools")
-	_ = toolsServerName
 
 	switch provider.Interface().(type) {
 	case hetznerCloudMachine:
@@ -86,6 +86,11 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 		err := hetzner.Create(hcloud_token, hcScOps, toolsServerName)
 		if err != nil {
 			return fmt.Errorf("couldn't create toolsServer as a hetznerCloudMachine: %s", err)
+		}
+
+		err = hetzner.WaitForServerRunning(hcloud_token, toolsServerName, 5*time.Second)
+		if err != nil {
+			return fmt.Errorf("waiting for toolsServer is running failed: %s", err)
 		}
 	}
 
