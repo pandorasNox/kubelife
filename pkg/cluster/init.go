@@ -92,6 +92,14 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 		if err != nil {
 			return fmt.Errorf("waiting for toolsServer is running failed: %s", err)
 		}
+
+		// wait for ssh access works
+
+		// os install tools / packages
+		err = installPackagesForToolsServer("user.name", "remote.address")
+		if err != nil {
+			return fmt.Errorf("couldn't install os packages for toolsServer: %s", err)
+		}
 	}
 
 	return nil
@@ -105,6 +113,10 @@ func extractFirstFound(v reflect.Value) (reflect.Value, error) {
 	}
 
 	return reflect.Value{}, errors.New("coudn't extract/found even one")
+}
+
+func installPackagesForToolsServer(user string, remoteAddrs string) error {
+	return nil
 }
 
 //plan
