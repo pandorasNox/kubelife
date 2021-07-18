@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/pandorasnox/kubelife/pkg/ssh"
 )
 
 // Status prints an overview status of hetzner cloud to std.out
@@ -35,6 +36,14 @@ func Status(token string) error {
 		fmt.Println("")
 	}
 	log.Printf("server types: %v\n", serverTypes)
+
+	hSSHKeyNames := []string{}
+	hSSHKeys, err := client.SSHKey.All(backgroundCtx)
+	for _, hSSHKey := range hSSHKeys {
+		hSSHKeyNames = append(hSSHKeyNames, hSSHKey.Name)
+	}
+
+	log.Printf("ssh keys names: %v\n", hSSHKeyNames)
 
 	servers, err := Servers(client, backgroundCtx)
 	if err != nil {
@@ -212,6 +221,25 @@ func DeleteAll(token string) error {
 	for i := range servers {
 		server := servers[i]
 		client.Server.Delete(context.Background(), server)
+	}
+
+	return nil
+}
+
+func CreateSSHKeys(token string, sshKeys []ssh.PubKeyData) error {
+	client := hcloud.NewClient(hcloud.WithToken(token))
+
+	for _, sshKey := range sshKeys {
+		sshOps := hcloud.SSHKeyCreateOpts{
+			Name:      sshKey.Name,
+			PublicKey: sshKey.PublicKey,
+			// Labels    map[string]string
+		}
+
+		_, _, err := client.SSHKey.Create(context.Background(), sshOps)
+		if err != nil {
+			return fmt.Errorf("couldn't create ssh key with name \"%s\": %s", sshKey.Name, err)
+		}
 	}
 
 	return nil

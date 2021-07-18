@@ -34,6 +34,11 @@ type SSH struct {
 	Client *ssh.Client
 }
 
+type PubKeyData struct {
+	Name      string `yaml:"name"`
+	PublicKey string `yaml:"public_key"`
+}
+
 // type Endpoint struct {
 //     Host string
 //     Port int

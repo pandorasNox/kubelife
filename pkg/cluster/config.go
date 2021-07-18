@@ -2,6 +2,8 @@ package cluster
 
 import (
 	"fmt"
+
+	"github.com/pandorasnox/kubelife/pkg/ssh"
 )
 
 // Config for the cluster
@@ -17,12 +19,9 @@ type Cluster struct {
 }
 
 type servers struct {
-	ToolsServer       toolsServer `yaml:"toolsServer"`
-	SSHAuthorizedKeys []struct {
-		Name      string `yaml:"name"`
-		PublicKey string `yaml:"public_key"`
-	} `yaml:"ssh_authorized_keys"`
-	Static struct {
+	ToolsServer       toolsServer       `yaml:"toolsServer"`
+	SSHAuthorizedKeys sshAuthorizedKeys `yaml:"ssh_authorized_keys"`
+	Static            struct {
 		Master []staticServer `yaml:"master"`
 		Worker []staticServer `yaml:"worker"`
 	} `yaml:"static"`
@@ -31,6 +30,8 @@ type servers struct {
 		Worker scalableWorkerServers `yaml:"worker"`
 	} `yaml:"scalableGroups"`
 }
+
+type sshAuthorizedKeys []ssh.PubKeyData
 
 type scalableMasterServers []scalableServer
 

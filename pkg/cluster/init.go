@@ -8,15 +8,32 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
+	"github.com/pandorasnox/kubelife/pkg/ssh"
 	log "github.com/sirupsen/logrus"
 )
 
 func Init(ccfg Config, hcloud_token string) error {
 	var err error
 
+	err = addSSHKeysToProvider(hcloud_token, "hetzer_cloud", ccfg.Cluster.Nodes.SSHAuthorizedKeys)
+	if err != nil {
+		return err
+	}
+
 	err = initToolsServer(ccfg, hcloud_token)
 	if err != nil {
 		return fmt.Errorf("couldn't initiate toolsServer: %s", err)
+	}
+
+	return nil
+}
+
+func addSSHKeysToProvider(hcloud_token string, provider string, sshKeys []ssh.PubKeyData) error {
+	if provider == "hetzner_cloud" {
+		err := hetzner.CreateSSHKeys(hcloud_token, sshKeys)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
