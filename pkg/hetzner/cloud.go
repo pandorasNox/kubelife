@@ -89,9 +89,9 @@ func Locations(token string) error {
 
 func Create(token string, hcScOps hcloud.ServerCreateOpts, serverName string) error {
 	startAfterCreate := true
-	automount := false
-
 	hcScOps.StartAfterCreate = &startAfterCreate
+
+	automount := false
 	hcScOps.Automount = &automount
 
 	location := ""
