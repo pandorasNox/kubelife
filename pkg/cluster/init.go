@@ -30,6 +30,7 @@ func Init(ccfg Config, hcloud_token string) error {
 
 func addSSHKeysToProvider(hcloud_token string, provider string, sshKeys []ssh.PubKeyData) error {
 	if provider == "hetzner_cloud" {
+		log.Info("add ssh public keys to provider hetzner_cloud")
 		err := hetzner.CreateSSHKeys(hcloud_token, sshKeys)
 		if err != nil {
 			return err
