@@ -15,7 +15,7 @@ import (
 func Init(ccfg Config, hcloud_token string) error {
 	var err error
 
-	err = addSSHKeysToProvider(hcloud_token, "hetzer_cloud", ccfg.Cluster.Nodes.SSHAuthorizedKeys)
+	err = addSSHKeysToProvider(hcloud_token, "hetzner_cloud", ccfg.Cluster.Nodes.SSHAuthorizedKeys)
 	if err != nil {
 		return err
 	}
