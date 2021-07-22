@@ -1,5 +1,6 @@
 
 .env
+!.env.template
 
 cluster.yaml
 cluster.yml
