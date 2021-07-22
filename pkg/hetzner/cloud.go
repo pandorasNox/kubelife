@@ -56,7 +56,10 @@ func Status(token string) error {
 	log.Printf("servers: %v\n", servers)
 
 	for _, server := range servers {
-		fmt.Printf("server name: \"%s\", status: \"%s\"", server.Name, server.Status)
+		fmt.Printf(
+			"server name: \"%s\", status: \"%s\", ip: \"%s\"",
+			server.Name, server.Status, server.PublicNet.IPv4.IP,
+		)
 	}
 
 	return nil
@@ -245,7 +248,7 @@ func CreateSSHKeys(token string, sshKeys []ssh.PubKeyData) error {
 			indentSigns = "└─"
 		}
 
-		if sshKeyAlreadyExists(sshKey.Name, hSSHKeys) {
+		if _, exist := sshKeyExists(sshKey.Name, hSSHKeys); exist {
 			log.Infof("%s skip adding public key with name: \"%s\", already exists", indentSigns, sshKey.Name)
 			continue
 		}
@@ -267,12 +270,35 @@ func CreateSSHKeys(token string, sshKeys []ssh.PubKeyData) error {
 	return nil
 }
 
-func sshKeyAlreadyExists(name string, hSSHKeys []*hcloud.SSHKey) bool {
-	for _, hkey := range hSSHKeys {
+func sshKeyExists(name string, hSSHKeys []*hcloud.SSHKey) (index int, exist bool) {
+	for i, hkey := range hSSHKeys {
 		if hkey.Name == name {
-			return true
+			return i, true
 		}
 	}
 
-	return false
+	return -1, false
+}
+
+func SSHKeys(token string) ([]*hcloud.SSHKey, error) {
+	client := hcloud.NewClient(hcloud.WithToken(token))
+
+	hSSHKeys, err := client.SSHKey.All(context.Background())
+	if err != nil {
+		return []*hcloud.SSHKey{}, fmt.Errorf("error retrieving ssh keys: %s", err)
+	}
+
+	return hSSHKeys, nil
+}
+
+func FilterSSHKeysByNameList(hSSHKeys []*hcloud.SSHKey, nameList []string) []*hcloud.SSHKey {
+	filteredLsit := []*hcloud.SSHKey{}
+
+	for _, nameToAdd := range nameList {
+		if index, exist := sshKeyExists(nameToAdd, hSSHKeys); exist {
+			filteredLsit = append(filteredLsit, hSSHKeys[index])
+		}
+	}
+
+	return filteredLsit
 }

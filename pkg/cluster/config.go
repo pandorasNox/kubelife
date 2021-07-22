@@ -33,6 +33,15 @@ type servers struct {
 
 type sshAuthorizedKeys []ssh.PubKeyData
 
+func (sshKeys sshAuthorizedKeys) NameList() []string {
+	list := []string{}
+	for _, v := range sshKeys {
+		list = append(list, v.Name)
+	}
+
+	return list
+}
+
 type scalableMasterServers []scalableServer
 
 type scalableWorkerServers []scalableServer

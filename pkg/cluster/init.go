@@ -41,6 +41,8 @@ func addSSHKeysToProvider(hcloud_token string, provider string, sshKeys []ssh.Pu
 }
 
 func initToolsServer(ccfg Config, hcloud_token string) error {
+	var err error
+
 	cToolsServer := ccfg.Cluster.Nodes.ToolsServer
 	if reflect.ValueOf(cToolsServer).IsZero() {
 		log.Println("skip toolsServer initialisation, given empty value(s)")
@@ -87,6 +89,15 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 			}
 		}
 
+		allHSSHKeys, err := hetzner.SSHKeys(hcloud_token)
+		if err != nil {
+			return err
+		}
+
+		sshKeysForMachine := hetzner.FilterSSHKeysByNameList(
+			allHSSHKeys, ccfg.Cluster.Nodes.SSHAuthorizedKeys.NameList(),
+		)
+
 		//map hetznerCloudMachine => to => hcloud.ServerCreateOpts
 		hcScOps := hcloud.ServerCreateOpts{
 			Name: toolsServerName,
@@ -96,12 +107,13 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 			Image: &hcloud.Image{
 				Name: hcm.Image.Name,
 			},
-			Labels: mergedLabels,
+			Labels:  mergedLabels,
+			SSHKeys: sshKeysForMachine,
 		}
 
 		//if toolsServer already exists, skip (add flag to force re-creation)
 
-		err := hetzner.Create(hcloud_token, hcScOps, toolsServerName)
+		err = hetzner.Create(hcloud_token, hcScOps, toolsServerName)
 		if err != nil {
 			return fmt.Errorf("couldn't create toolsServer as a hetznerCloudMachine: %s", err)
 		}
