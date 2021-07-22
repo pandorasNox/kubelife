@@ -175,31 +175,33 @@ func CreateSingle(token string) error {
 	return nil
 }
 
-func WaitForServerRunning(token string, serverName string, timeoutSeconds time.Duration) error {
+func WaitForServerRunning(token string, serverName string, timeoutSeconds time.Duration) (*hcloud.Server, error) {
 	log.Infof("waiting for server \"%s\" is running", serverName)
 
 	backgroundCtx := context.Background()
 	client := hcloud.NewClient(hcloud.WithToken(token))
 
 	if timeoutSeconds <= 0 {
-		return errors.New("seconds needs to be larger than 0")
+		return &hcloud.Server{}, errors.New("seconds needs to be larger than 0")
 	}
 
 	start := time.Now()
-	end := start.Add(timeoutSeconds * time.Second)
+	end := start.Add(timeoutSeconds)
 
+	retServer := &hcloud.Server{}
 	for {
 		now := time.Now()
-		if !inTimeSpan(start, end, now) {
-			return fmt.Errorf("reached timeout of '%s' seconds", timeoutSeconds)
+		if now.After(end) {
+			return &hcloud.Server{}, fmt.Errorf("reached timeout of '%s' seconds", timeoutSeconds)
 		}
 
 		server, _, err := client.Server.GetByName(backgroundCtx, serverName)
 		if err != nil {
-			return fmt.Errorf("error retrieving server with name '%s': %s", serverName, err)
+			return &hcloud.Server{}, fmt.Errorf("error retrieving server with name '%s': %s", serverName, err)
 		}
 
 		if server.Status == hcloud.ServerStatusRunning {
+			retServer = server
 			break
 		}
 
@@ -208,11 +210,7 @@ func WaitForServerRunning(token string, serverName string, timeoutSeconds time.D
 
 	log.Infof("server \"%s\" is now running", serverName)
 
-	return nil
-}
-
-func inTimeSpan(start, end, check time.Time) bool {
-	return check.After(start) && check.Before(end)
+	return retServer, nil
 }
 
 func DeleteAll(token string) error {

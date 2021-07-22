@@ -118,15 +118,19 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 			return fmt.Errorf("couldn't create toolsServer as a hetznerCloudMachine: %s", err)
 		}
 
-		err = hetzner.WaitForServerRunning(hcloud_token, toolsServerName, 5*time.Second)
+		hToolsServer, err := hetzner.WaitForServerRunning(hcloud_token, toolsServerName, 10*time.Second)
 		if err != nil {
 			return fmt.Errorf("waiting for toolsServer is running failed: %s", err)
 		}
 
 		// wait for ssh access works
+		err = waitForSSH("root", hToolsServer.PublicNet.IPv4.IP.String(), 15*time.Second)
+		if err != nil {
+			return fmt.Errorf("waiting for toolsServer ssh access failed: %s", err)
+		}
 
 		// os install tools / packages
-		err = installPackagesForToolsServer("user.name", "remote.address")
+		err = installPackagesForToolsServer("root", hToolsServer.PublicNet.IPv4.IP.String())
 		if err != nil {
 			return fmt.Errorf("couldn't install os packages for toolsServer: %s", err)
 		}
@@ -145,7 +149,118 @@ func extractFirstFound(v reflect.Value) (reflect.Value, error) {
 	return reflect.Value{}, errors.New("coudn't extract/found even one")
 }
 
+func waitForSSH(user string, remoteAddrs string, timeoutSeconds time.Duration) error {
+	log.Infof("waiting for ssh access for \"%s\"", remoteAddrs)
+
+	if timeoutSeconds <= 0 {
+		return errors.New("seconds needs to be larger than 0")
+	}
+
+	start := time.Now()
+	end := start.Add(timeoutSeconds)
+
+	var lastErr error
+	for {
+		now := time.Now()
+		if now.After(end) {
+			fmt.Println("now is after")
+			return fmt.Errorf("reached timeout of '%s' seconds, last err: %s", timeoutSeconds, lastErr)
+		} else {
+			fmt.Println("now is before")
+		}
+
+		ssh, err := ssh.New(user, remoteAddrs, ssh.AgentAuth())
+		if err != nil {
+			lastErr = fmt.Errorf("couldn't create ssh client: %s", err)
+		}
+
+		if err == nil {
+			ssh.Close()
+			break
+		}
+
+		log.Info(".")
+		time.Sleep(1 * time.Second)
+	}
+
+	return nil
+}
+
 func installPackagesForToolsServer(user string, remoteAddrs string) error {
+	ssh, err := ssh.New(user, remoteAddrs, ssh.AgentAuth())
+	if err != nil {
+		return fmt.Errorf("couldn't create ssh client: %s", err)
+	}
+	defer ssh.Close()
+
+	log.Println("update system")
+	_, err = ssh.Exec("apt-get update && apt-get upgrade -y")
+	if err != nil {
+		return fmt.Errorf("couldn't update system: %s", err)
+	}
+
+	log.Println("install os packages")
+	packages := []string{
+		"htop",
+		"iotop",
+		"atop",
+		"nload",
+		"sysstat",
+		"smartmontools",
+		// "docker.io",
+		"ethtool",
+		"socat",
+		"dnsutils",
+		"bash-completion",
+		"bsdmainutils",
+	}
+	for _, pkg := range packages {
+		_, err = ssh.Exec(fmt.Sprintf("apt install -y %s", pkg))
+		if err != nil {
+			return fmt.Errorf("couldn't install os package \"%s\": %s", pkg, err)
+		}
+	}
+
+	log.Println("install & enable docker")
+	_, err = ssh.Exec("apt-get install -y docker.io && systemctl enable docker.service")
+	if err != nil {
+		return fmt.Errorf("couldn't install docker: %s", err)
+	}
+
+	log.Println("enable docker")
+	_, err = ssh.Exec("systemctl enable docker.service")
+	if err != nil {
+		return fmt.Errorf("couldn't enable docker: %s", err)
+	}
+
+	log.Println("add kubernetes packae list & update")
+	k8sPkgCmd := "apt-get update && apt-get install -y apt-transport-https curl"
+	k8sPkgCmd = fmt.Sprintf("%s && %s", k8sPkgCmd, "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -")
+	k8sPkgCmd = fmt.Sprintf("%s && %s", k8sPkgCmd, "echo deb https://apt.kubernetes.io/ kubernetes-xenial main > /etc/apt/sources.list.d/kubernetes.list")
+	k8sPkgCmd = fmt.Sprintf("%s && %s", k8sPkgCmd, "apt-get update")
+	_, err = ssh.Exec(k8sPkgCmd)
+	if err != nil {
+		return fmt.Errorf("couldn't add kubernetes packae list & update: %s", err)
+	}
+
+	log.Println("install kubectl")
+	_, err = ssh.Exec("apt-get install -y kubectl=1.18.6-00")
+	if err != nil {
+		log.Fatalf("couldn't install kubectl: %s", err)
+	}
+
+	log.Println("hold k8s tooling")
+	_, err = ssh.Exec("apt-mark hold kubectl")
+	if err != nil {
+		log.Fatalf("bar %s", err)
+	}
+
+	log.Println("disable swap")
+	_, err = ssh.Exec("swapoff -a && sed -i '/ swap / s/^/#/' /etc/fstab")
+	if err != nil {
+		log.Fatalf("bar %s", err)
+	}
+
 	return nil
 }
 
