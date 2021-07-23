@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -220,24 +221,7 @@ func toolsServerCommands() *cli.Command {
 				Name:  "create",
 				Usage: "creates the toolsServer",
 				Action: func(c *cli.Context) error {
-					err := cluster.ToolsServerCreate(os.Getenv("HCLOUD_TOKEN"))
-					if err != nil {
-						return err
-					}
-
-					// ts, err := cluster.ToolsServer(os.Getenv("HCLOUD_TOKEN"))
-					// if err != nil {
-					// 	return err
-					// }
-
-					// status, err := ts.Create()
-					// if err != nil {
-					// 	return err
-					// }
-
-					// fmt.Println("toolsServer status:", status)
-
-					return nil
+					return errors.New("not implemented")
 				},
 			},
 			// {
