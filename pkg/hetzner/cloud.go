@@ -175,24 +175,24 @@ func CreateSingle(token string) error {
 	return nil
 }
 
-func WaitForServerRunning(token string, serverName string, timeoutSeconds time.Duration) (*hcloud.Server, error) {
-	log.Infof("waiting for server \"%s\" is running", serverName)
+func WaitForServerRunning(token string, serverName string, timeout time.Duration) (*hcloud.Server, error) {
+	log.Infof("waiting for server \"%s\" is running, timeout is set to \"%s\"", serverName, timeout.String())
 
 	backgroundCtx := context.Background()
 	client := hcloud.NewClient(hcloud.WithToken(token))
 
-	if timeoutSeconds <= 0 {
-		return &hcloud.Server{}, errors.New("seconds needs to be larger than 0")
+	if timeout <= 0 {
+		return &hcloud.Server{}, errors.New("timeout needs to be larger than 0")
 	}
 
 	start := time.Now()
-	end := start.Add(timeoutSeconds)
+	end := start.Add(timeout)
 
 	retServer := &hcloud.Server{}
 	for {
 		now := time.Now()
 		if now.After(end) {
-			return &hcloud.Server{}, fmt.Errorf("reached timeout of '%s' seconds", timeoutSeconds)
+			return &hcloud.Server{}, fmt.Errorf("reached timeout of '%s' seconds", timeout)
 		}
 
 		server, _, err := client.Server.GetByName(backgroundCtx, serverName)

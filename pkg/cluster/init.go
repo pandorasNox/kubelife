@@ -118,7 +118,7 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 			return fmt.Errorf("couldn't create toolsServer as a hetznerCloudMachine: %s", err)
 		}
 
-		hToolsServer, err := hetzner.WaitForServerRunning(hcloud_token, toolsServerName, 10*time.Second)
+		hToolsServer, err := hetzner.WaitForServerRunning(hcloud_token, toolsServerName, 35*time.Second)
 		if err != nil {
 			return fmt.Errorf("waiting for toolsServer is running failed: %s", err)
 		}
@@ -149,24 +149,21 @@ func extractFirstFound(v reflect.Value) (reflect.Value, error) {
 	return reflect.Value{}, errors.New("coudn't extract/found even one")
 }
 
-func waitForSSH(user string, remoteAddrs string, timeoutSeconds time.Duration) error {
-	log.Infof("waiting for ssh access for \"%s\"", remoteAddrs)
+func waitForSSH(user string, remoteAddrs string, timeout time.Duration) error {
+	log.Infof("waiting for ssh access for \"%s\", timeout is set to \"%s\"", remoteAddrs, timeout.String())
 
-	if timeoutSeconds <= 0 {
-		return errors.New("seconds needs to be larger than 0")
+	if timeout <= 0 {
+		return errors.New("timeout needs to be larger than 0")
 	}
 
 	start := time.Now()
-	end := start.Add(timeoutSeconds)
+	end := start.Add(timeout)
 
 	var lastErr error
 	for {
 		now := time.Now()
 		if now.After(end) {
-			fmt.Println("now is after")
-			return fmt.Errorf("reached timeout of '%s' seconds, last err: %s", timeoutSeconds, lastErr)
-		} else {
-			fmt.Println("now is before")
+			return fmt.Errorf("reached timeout of '%s' seconds, last err: %s", timeout, lastErr)
 		}
 
 		ssh, err := ssh.New(user, remoteAddrs, ssh.AgentAuth())
@@ -179,9 +176,10 @@ func waitForSSH(user string, remoteAddrs string, timeoutSeconds time.Duration) e
 			break
 		}
 
-		log.Info(".")
 		time.Sleep(1 * time.Second)
 	}
+
+	log.Infof("ssh access is now available for \"%s\"", remoteAddrs)
 
 	return nil
 }

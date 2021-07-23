@@ -66,17 +66,17 @@ func New(serverUser string, addr string, authFn AuthFn) (*SSH, error) {
 		return &SSH{}, nil
 	}
 
-	currentUser, err := user.Current()
-	if err != nil {
-		return &SSH{}, fmt.Errorf("could not create hostkeycallback function: %s", err)
-	}
+	// currentUser, err := user.Current()
+	// if err != nil {
+	// 	return &SSH{}, fmt.Errorf("could not create hostkeycallback function: %s", err)
+	// }
 
-	knownHostPath := fmt.Sprintf("%s/%s", currentUser.HomeDir, ".ssh/known_hosts")
+	// knownHostPath := fmt.Sprintf("%s/%s", currentUser.HomeDir, ".ssh/known_hosts")
 
-	hostKeyCallback, err := kh.New(knownHostPath)
-	if err != nil {
-		return &SSH{}, fmt.Errorf("could not create hostkeycallback function: %s", err)
-	}
+	// hostKeyCallback, err := kh.New(knownHostPath)
+	// if err != nil {
+	// 	return &SSH{}, fmt.Errorf("could not create hostkeycallback function: %s", err)
+	// }
 
 	config := &ssh.ClientConfig{
 		User: serverUser,
@@ -85,7 +85,8 @@ func New(serverUser string, addr string, authFn AuthFn) (*SSH, error) {
 		},
 		Timeout: 20 * time.Second,
 		//see https://skarlso.github.io/2019/02/17/go-ssh-with-host-key-verification/
-		HostKeyCallback: hostKeyCallback,
+		// HostKeyCallback: hostKeyCallback,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
 	port := 22
