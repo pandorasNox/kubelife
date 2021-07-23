@@ -19,15 +19,15 @@ type Cluster struct {
 }
 
 type servers struct {
-	ToolsServer       toolsServer       `yaml:"toolsServer"`
 	SSHAuthorizedKeys sshAuthorizedKeys `yaml:"ssh_authorized_keys"`
 	Static            struct {
-		Master []staticServer `yaml:"master"`
-		Worker []staticServer `yaml:"worker"`
+		ToolsServer  toolsServer    `yaml:"toolsServer"`
+		ControlPlane []staticServer `yaml:"controlPlane"`
+		Worker       []staticServer `yaml:"worker"`
 	} `yaml:"static"`
 	ScalableGroups struct {
-		Master scalableMasterServers `yaml:"master"`
-		Worker scalableWorkerServers `yaml:"worker"`
+		ControlPlane scalableControlPlaneServers `yaml:"controlPlane"`
+		Worker       scalableWorkerServers       `yaml:"worker"`
 	} `yaml:"scalableGroups"`
 }
 
@@ -42,7 +42,7 @@ func (sshKeys sshAuthorizedKeys) NameList() []string {
 	return list
 }
 
-type scalableMasterServers []scalableServer
+type scalableControlPlaneServers []scalableServer
 
 type scalableWorkerServers []scalableServer
 

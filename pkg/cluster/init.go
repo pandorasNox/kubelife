@@ -15,6 +15,7 @@ import (
 func Init(ccfg Config, hcloud_token string) error {
 	var err error
 
+	// todo: run this only based on provider found in cluster.yaml, not hardcoded
 	err = addSSHKeysToProvider(hcloud_token, "hetzner_cloud", ccfg.Cluster.Nodes.SSHAuthorizedKeys)
 	if err != nil {
 		return err
@@ -43,7 +44,7 @@ func addSSHKeysToProvider(hcloud_token string, provider string, sshKeys []ssh.Pu
 func initToolsServer(ccfg Config, hcloud_token string) error {
 	var err error
 
-	cToolsServer := ccfg.Cluster.Nodes.ToolsServer
+	cToolsServer := ccfg.Cluster.Nodes.Static.ToolsServer
 	if reflect.ValueOf(cToolsServer).IsZero() {
 		log.Println("skip toolsServer initialisation, given empty value(s)")
 		return nil
