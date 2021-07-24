@@ -12,12 +12,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func initToolsServer(ccfg Config, hcloud_token string) error {
+func provisionToolsServer(ccfg Config, hcloud_token string) error {
+	log.Info("start provisioning toolsServer")
+
 	var err error
 
 	cToolsServer := ccfg.Cluster.Nodes.Static.ToolsServer
 	if reflect.ValueOf(cToolsServer).IsZero() {
-		log.Println("skip toolsServer initialisation, given empty value(s)")
+		log.Println("└─ skip provisioning of toolsServer, given empty configuration")
 		return nil
 	}
 
@@ -35,7 +37,7 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 	}
 
 	if countNonEmpty > 1 {
-		return errors.New("for the toolsServer you provided more than 1 ProviderMachineTemplate")
+		return fmt.Errorf("for the toolsServer you can only provided exact 1 ProviderMachineTemplate, you provided \"%d\"", countNonEmpty)
 	}
 
 	provider, err := extractFirstFound(v)
@@ -107,6 +109,8 @@ func initToolsServer(ccfg Config, hcloud_token string) error {
 			return fmt.Errorf("couldn't install os packages for toolsServer: %s", err)
 		}
 	}
+
+	log.Info("√ finished provisioning toolsServer")
 
 	return nil
 }

@@ -20,7 +20,7 @@ func Init(ccfg Config, hcloud_token string) error {
 		return err
 	}
 
-	err = initToolsServer(ccfg, hcloud_token)
+	err = provisionToolsServer(ccfg, hcloud_token)
 	if err != nil {
 		return fmt.Errorf("couldn't initiate toolsServer: %s", err)
 	}
