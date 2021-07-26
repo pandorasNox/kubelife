@@ -15,7 +15,7 @@ func Init(ccfg Config, hcloud_token string) error {
 	var err error
 
 	// todo: run this only based on provider found in cluster.yaml, not hardcoded
-	err = addSSHKeysToProvider(hcloud_token, "hetzner_cloud", ccfg.Cluster.Nodes.SSHAuthorizedKeys)
+	err = addSSHKeysToProvider(hcloud_token, "hetzner_cloud", ccfg.Cluster.SSHAuthorizedKeys)
 	if err != nil {
 		return err
 	}
@@ -96,5 +96,9 @@ func waitForSSH(user string, remoteAddrs string, timeout time.Duration) error {
 
 // interface cloud provide
 // cloudProvider.reconcile(desiredState)
+// cloudProvider.Provision(ccfg, envCfg)
 
 // how to notice vms ?
+
+// cloudProvider.Provision(ccfg, envCfg)
+// install os packages

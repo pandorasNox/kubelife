@@ -14,16 +14,15 @@ type Config struct {
 
 // Cluster related information
 type Cluster struct {
-	Name  string  `yaml:"name"`
-	Nodes servers `yaml:"nodes"`
+	Name              string            `yaml:"name"`
+	SSHAuthorizedKeys sshAuthorizedKeys `yaml:"ssh_authorized_keys"`
+	Nodes             servers           `yaml:"nodes"`
 }
 
 type servers struct {
-	SSHAuthorizedKeys sshAuthorizedKeys `yaml:"ssh_authorized_keys"`
-	Static            struct {
-		ToolsServer  toolsServer    `yaml:"toolsServer"`
-		ControlPlane []staticServer `yaml:"controlPlane"`
-		Worker       []staticServer `yaml:"worker"`
+	Static struct {
+		ToolsServer toolsServer    `yaml:"toolsServer"`
+		Worker      []staticServer `yaml:"worker"`
 	} `yaml:"static"`
 	ScalableGroups struct {
 		ControlPlane scalableControlPlaneServers `yaml:"controlPlane"`

@@ -69,7 +69,7 @@ func provisionToolsServer(ccfg Config, hcloud_token string) error {
 		}
 
 		sshKeysForMachine := hetzner.FilterSSHKeysByNameList(
-			allHSSHKeys, ccfg.Cluster.Nodes.SSHAuthorizedKeys.NameList(),
+			allHSSHKeys, ccfg.Cluster.SSHAuthorizedKeys.NameList(),
 		)
 
 		//map hetznerCloudMachine => to => hcloud.ServerCreateOpts

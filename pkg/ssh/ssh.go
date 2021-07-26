@@ -23,11 +23,8 @@ import (
 	"os"
 	"time"
 
-	"os/user"
-
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	kh "golang.org/x/crypto/ssh/knownhosts"
 )
 
 type SSH struct {
