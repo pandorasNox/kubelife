@@ -33,3 +33,8 @@ delete:
 cli:
 	zsh
 
+
+.PHONY: test
+test:
+	go test ./...
+

@@ -23,24 +23,7 @@ func provisionToolsServer(ccfg Config, hcloud_token string) error {
 		return nil
 	}
 
-	if reflect.ValueOf(cToolsServer.ProviderMachineTemplate).IsZero() {
-		msg := "for the toolsServer you need to provide a concrete ProviderMachineTemplate"
-		return errors.New(msg)
-	}
-
-	v := reflect.ValueOf(cToolsServer.ProviderMachineTemplate)
-	countNonEmpty := 0
-	for i := 0; i < v.NumField(); i++ {
-		if !v.Field(i).IsZero() {
-			countNonEmpty++
-		}
-	}
-
-	if countNonEmpty > 1 {
-		return fmt.Errorf("for the toolsServer you can only provided exact 1 ProviderMachineTemplate, you provided \"%d\"", countNonEmpty)
-	}
-
-	provider, err := extractFirstFound(v)
+	provider, err := extractProviderMachineTemplateValue(cToolsServer)
 	if err != nil {
 		return fmt.Errorf("couldn't extract ProviderMachineTemplate: %s", err)
 	}
@@ -113,6 +96,42 @@ func provisionToolsServer(ccfg Config, hcloud_token string) error {
 	log.Info("√ finished provisioning toolsServer")
 
 	return nil
+}
+
+func extractProviderMachineTemplateValue(tsCfg toolsServer) (reflect.Value, error) {
+	v := reflect.ValueOf(tsCfg.ProviderMachineTemplate)
+	if v.IsZero() {
+		msg := "for the toolsServer you need to provide a concrete ProviderMachineTemplate"
+		return reflect.Value{}, errors.New(msg)
+	}
+
+	countNonEmpty := 0
+	for i := 0; i < v.NumField(); i++ {
+		if !v.Field(i).IsZero() {
+			countNonEmpty++
+		}
+	}
+
+	if countNonEmpty != 1 {
+		return reflect.Value{}, fmt.Errorf("for the toolsServer you can only provided exact 1 ProviderMachineTemplate, you provided \"%d\"", countNonEmpty)
+	}
+
+	provider, err := extractFirstNonEmpty(v)
+	if err != nil {
+		return reflect.Value{}, fmt.Errorf("couldn't extract first non empty machine template: \"%s\"", err)
+	}
+
+	return provider, nil
+}
+
+func extractFirstNonEmpty(v reflect.Value) (reflect.Value, error) {
+	for i := 0; i < v.NumField(); i++ {
+		if !v.Field(i).IsZero() {
+			return v.Field(i), nil
+		}
+	}
+
+	return reflect.Value{}, errors.New("coudn't extract/found even one")
 }
 
 func installPackagesForToolsServer(user string, remoteAddrs string) error {

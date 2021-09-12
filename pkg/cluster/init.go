@@ -3,7 +3,6 @@ package cluster
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
@@ -38,16 +37,6 @@ func addSSHKeysToProvider(hcloud_token string, provider string, sshKeys []ssh.Pu
 	}
 
 	return nil
-}
-
-func extractFirstFound(v reflect.Value) (reflect.Value, error) {
-	for i := 0; i < v.NumField(); i++ {
-		if !v.Field(i).IsZero() {
-			return v.Field(i), nil
-		}
-	}
-
-	return reflect.Value{}, errors.New("coudn't extract/found even one")
 }
 
 func waitForSSH(user string, remoteAddrs string, timeout time.Duration) error {

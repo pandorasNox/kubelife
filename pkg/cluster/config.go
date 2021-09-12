@@ -57,7 +57,7 @@ type scalableServer struct {
 }
 
 type toolsServer struct {
-	Name                    string                  `yaml:"name"`
+	// Name                    string                  `yaml:"name"`
 	ProviderMachineTemplate providerMachineTemplate `yaml:"providerMachineTemplate"`
 }
 
