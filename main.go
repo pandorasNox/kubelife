@@ -25,11 +25,16 @@ import (
 	"github.com/pandorasnox/kubelife/pkg/cluster"
 	"gopkg.in/yaml.v2"
 
+	"github.com/kelseyhightower/envconfig"
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
 	"github.com/pandorasnox/kubelife/pkg/ssh"
 	log "github.com/sirupsen/logrus"
 	cli "github.com/urfave/cli/v2"
 )
+
+type EnvCfg struct {
+	HcloudToken string `envconfig:"KUBELIFE_HCLOUD_TOKEN" desc:"Foo Bar, what do you want more?"`
+}
 
 func main() {
 	// user := flag.String("user", "", "remote server login user")
@@ -42,10 +47,28 @@ func main() {
 
 	var err error
 
+	var envCfg EnvCfg
+
+	err = envconfig.Process("", &envCfg)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	clusterCfg, err := loadClusterConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// sanityCheck(clusterCfg, envCfg)
+
+	// parseEnv
+	// loadClusterConfig
+	//// cfg.SanityCheck
+	// collect provider structs (in map or array? + interface usage)
+	//// cfg.ToolsServer.getProvider ???
+	// give cluster cfg + extracted providers + env to init
+	// toolsServerInit
+	// nodesInit
 
 	app := &cli.App{
 		Name:  "Kubelife",
@@ -60,7 +83,20 @@ func main() {
 				Usage: "prints out status of all remote cloud providers",
 				Action: func(c *cli.Context) error {
 					fmt.Println("hetzner clolud status:")
-					err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
+					err := hetzner.Status(envCfg.HcloudToken)
+					if err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+			{
+				Name:  "env",
+				Usage: "print which environment variables can be used",
+				Action: func(c *cli.Context) error {
+					// fmt.Println("hetzner clolud status:")
+					err = envconfig.Usage("", &envCfg)
 					if err != nil {
 						return err
 					}
@@ -69,8 +105,8 @@ func main() {
 				},
 			},
 			clusterCommands(clusterCfg),
-			hetznerCloudCommands(),
-			toolsServerCommands(),
+			hetznerCloudCommands(envCfg.HcloudToken),
+			toolsServerCommands(clusterCfg, envCfg),
 		},
 	}
 
@@ -125,7 +161,7 @@ func decodeClusterConfig(r io.Reader) (cluster.Config, error) {
 	return cfg, nil
 }
 
-func hetznerCloudCommands() *cli.Command {
+func hetznerCloudCommands(hcloud_token string) *cli.Command {
 	return &cli.Command{
 		Name: "hetzner",
 		// Aliases: []string{"h"},
@@ -136,7 +172,7 @@ func hetznerCloudCommands() *cli.Command {
 				// Aliases: []string{"s"},
 				Usage: "prints the hetzner status to std.out",
 				Action: func(c *cli.Context) error {
-					err := hetzner.Status(os.Getenv("HCLOUD_TOKEN"))
+					err := hetzner.Status(hcloud_token)
 					if err != nil {
 						return err
 					}
@@ -213,7 +249,7 @@ func hetznerCloudCommands() *cli.Command {
 	}
 }
 
-func toolsServerCommands() *cli.Command {
+func toolsServerCommands(ccfg cluster.Config, envCfg EnvCfg) *cli.Command {
 	return &cli.Command{
 		Name: "toolsServer",
 		Subcommands: []*cli.Command{

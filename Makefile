@@ -10,8 +10,8 @@ DIRNAME:=$(shell basename "$(PWD)")
 # export $(shell sed 's/=.*//' .env)
 
 # explicit for one var:
-HCLOUD_TOKEN=$(shell source .env; echo $${HCLOUD_TOKEN})
-export HCLOUD_TOKEN
+KUBELIFE_HCLOUD_TOKEN=$(shell source .env; echo $${KUBELIFE_HCLOUD_TOKEN})
+export KUBELIFE_HCLOUD_TOKEN
 
 
 .PHONY: init
