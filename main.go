@@ -23,7 +23,7 @@ import (
 	"os"
 
 	"github.com/pandorasnox/kubelife/pkg/cluster"
-	"github.com/pandorasnox/kubelife/pkg/env"
+	"github.com/pandorasnox/kubelife/pkg/environment"
 	"gopkg.in/yaml.v2"
 
 	"github.com/kelseyhightower/envconfig"
@@ -44,9 +44,9 @@ func main() {
 
 	var err error
 
-	var envCfg env.Cfg
+	var env environment.Config
 
-	err = envconfig.Process("", &envCfg)
+	err = envconfig.Process("", &env)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -56,7 +56,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// sanityCheck(clusterCfg, envCfg)
+	// sanityCheck(clusterCfg, env)
 
 	// parseEnv
 	// loadClusterConfig
@@ -80,7 +80,7 @@ func main() {
 				Usage: "prints out status of all remote cloud providers",
 				Action: func(c *cli.Context) error {
 					fmt.Println("hetzner clolud status:")
-					err := hetzner.Status(envCfg.HcloudToken)
+					err := hetzner.Status(env.HcloudToken)
 					if err != nil {
 						return err
 					}
@@ -93,7 +93,7 @@ func main() {
 				Usage: "print which environment variables can be used",
 				Action: func(c *cli.Context) error {
 					// fmt.Println("hetzner clolud status:")
-					err = envconfig.Usage("", &envCfg)
+					err = envconfig.Usage("", &env)
 					if err != nil {
 						return err
 					}
@@ -101,9 +101,9 @@ func main() {
 					return nil
 				},
 			},
-			clusterCommands(clusterCfg, envCfg),
-			hetznerCloudCommands(envCfg.HcloudToken),
-			toolsServerCommands(clusterCfg, envCfg),
+			clusterCommands(clusterCfg, env),
+			hetznerCloudCommands(env.HcloudToken),
+			toolsServerCommands(clusterCfg, env),
 		},
 	}
 
@@ -246,7 +246,7 @@ func hetznerCloudCommands(hcloud_token string) *cli.Command {
 	}
 }
 
-func toolsServerCommands(ccfg cluster.Config, envCfg env.Cfg) *cli.Command {
+func toolsServerCommands(ccfg cluster.Config, env environment.Config) *cli.Command {
 	return &cli.Command{
 		Name: "toolsServer",
 		Subcommands: []*cli.Command{
@@ -280,7 +280,7 @@ func toolsServerCommands(ccfg cluster.Config, envCfg env.Cfg) *cli.Command {
 	}
 }
 
-func clusterCommands(ccfg cluster.Config, envCfg env.Cfg) *cli.Command {
+func clusterCommands(ccfg cluster.Config, env environment.Config) *cli.Command {
 	return &cli.Command{
 		Name: "cluster",
 		Subcommands: []*cli.Command{
@@ -288,7 +288,7 @@ func clusterCommands(ccfg cluster.Config, envCfg env.Cfg) *cli.Command {
 				Name:  "init",
 				Usage: "initializes the infrastructure based on cluster.yaml",
 				Action: func(c *cli.Context) error {
-					err := cluster.Init(ccfg, envCfg)
+					err := cluster.Init(ccfg, env)
 					if err != nil {
 						return fmt.Errorf("couldn't init cluster: %s", err)
 					}

@@ -5,22 +5,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pandorasnox/kubelife/pkg/env"
+	"github.com/pandorasnox/kubelife/pkg/environment"
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
 	"github.com/pandorasnox/kubelife/pkg/ssh"
 	log "github.com/sirupsen/logrus"
 )
 
-func Init(ccfg Config, envCfg env.Cfg) error {
+func Init(ccfg Config, env environment.Config) error {
 	var err error
 
 	// todo: run this only based on provider found in cluster.yaml, not hardcoded
-	err = addSSHKeysToProvider(envCfg.HcloudToken, "hetzner_cloud", ccfg.Cluster.SSHAuthorizedKeys)
+	err = addSSHKeysToProvider(env.HcloudToken, "hetzner_cloud", ccfg.Cluster.SSHAuthorizedKeys)
 	if err != nil {
 		return err
 	}
 
-	err = provisionToolsServer(ccfg, envCfg)
+	err = provisionToolsServer(ccfg, env)
 	if err != nil {
 		return fmt.Errorf("couldn't initiate toolsServer: %s", err)
 	}
