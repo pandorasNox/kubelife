@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/pandorasnox/kubelife/pkg/env"
 	"github.com/pandorasnox/kubelife/pkg/hetzner"
 	"github.com/pandorasnox/kubelife/pkg/ssh"
 	log "github.com/sirupsen/logrus"
 )
 
-func provisionToolsServer(ccfg Config, hcloud_token string) error {
+func provisionToolsServer(ccfg Config, envCfg env.Cfg) error {
 	log.Info("start provisioning toolsServer")
 
 	var err error
@@ -46,7 +47,7 @@ func provisionToolsServer(ccfg Config, hcloud_token string) error {
 			}
 		}
 
-		allHSSHKeys, err := hetzner.SSHKeys(hcloud_token)
+		allHSSHKeys, err := hetzner.SSHKeys(envCfg.HcloudToken)
 		if err != nil {
 			return err
 		}
@@ -70,12 +71,12 @@ func provisionToolsServer(ccfg Config, hcloud_token string) error {
 
 		//if toolsServer already exists, skip (add flag to force re-creation)
 
-		err = hetzner.Create(hcloud_token, hcScOps, toolsServerName)
+		err = hetzner.Create(envCfg.HcloudToken, hcScOps, toolsServerName)
 		if err != nil {
 			return fmt.Errorf("couldn't create toolsServer as a hetznerCloudMachine: %s", err)
 		}
 
-		hToolsServer, err := hetzner.WaitForServerRunning(hcloud_token, toolsServerName, 35*time.Second)
+		hToolsServer, err := hetzner.WaitForServerRunning(envCfg.HcloudToken, toolsServerName, 35*time.Second)
 		if err != nil {
 			return fmt.Errorf("waiting for toolsServer is running failed: %s", err)
 		}

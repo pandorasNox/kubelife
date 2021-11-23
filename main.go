@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/pandorasnox/kubelife/pkg/cluster"
+	"github.com/pandorasnox/kubelife/pkg/env"
 	"gopkg.in/yaml.v2"
 
 	"github.com/kelseyhightower/envconfig"
@@ -31,10 +32,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	cli "github.com/urfave/cli/v2"
 )
-
-type EnvCfg struct {
-	HcloudToken string `envconfig:"KUBELIFE_HCLOUD_TOKEN" desc:"Foo Bar, what do you want more?"`
-}
 
 func main() {
 	// user := flag.String("user", "", "remote server login user")
@@ -47,7 +44,7 @@ func main() {
 
 	var err error
 
-	var envCfg EnvCfg
+	var envCfg env.Cfg
 
 	err = envconfig.Process("", &envCfg)
 	if err != nil {
@@ -104,7 +101,7 @@ func main() {
 					return nil
 				},
 			},
-			clusterCommands(clusterCfg),
+			clusterCommands(clusterCfg, envCfg),
 			hetznerCloudCommands(envCfg.HcloudToken),
 			toolsServerCommands(clusterCfg, envCfg),
 		},
@@ -249,7 +246,7 @@ func hetznerCloudCommands(hcloud_token string) *cli.Command {
 	}
 }
 
-func toolsServerCommands(ccfg cluster.Config, envCfg EnvCfg) *cli.Command {
+func toolsServerCommands(ccfg cluster.Config, envCfg env.Cfg) *cli.Command {
 	return &cli.Command{
 		Name: "toolsServer",
 		Subcommands: []*cli.Command{
@@ -283,7 +280,7 @@ func toolsServerCommands(ccfg cluster.Config, envCfg EnvCfg) *cli.Command {
 	}
 }
 
-func clusterCommands(ccfg cluster.Config) *cli.Command {
+func clusterCommands(ccfg cluster.Config, envCfg env.Cfg) *cli.Command {
 	return &cli.Command{
 		Name: "cluster",
 		Subcommands: []*cli.Command{
@@ -291,8 +288,7 @@ func clusterCommands(ccfg cluster.Config) *cli.Command {
 				Name:  "init",
 				Usage: "initializes the infrastructure based on cluster.yaml",
 				Action: func(c *cli.Context) error {
-					hcloud_token := os.Getenv("HCLOUD_TOKEN")
-					err := cluster.Init(ccfg, hcloud_token)
+					err := cluster.Init(ccfg, envCfg)
 					if err != nil {
 						return fmt.Errorf("couldn't init cluster: %s", err)
 					}
