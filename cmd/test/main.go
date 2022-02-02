@@ -37,7 +37,7 @@ point:
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(config.Point.X)
+	fmt.Println(config.Point)
 
 	// configBytes, err := goyaml.Marshal(config)
 	// if err != nil {
