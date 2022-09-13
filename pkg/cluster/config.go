@@ -24,10 +24,10 @@ type servers struct {
 		ToolsServer toolsServer    `yaml:"toolsServer"`
 		Worker      []staticServer `yaml:"worker"`
 	} `yaml:"static"`
-	ScalableGroups struct {
+	Scalable struct {
 		ControlPlane scalableControlPlaneServers `yaml:"controlPlane"`
 		Worker       scalableWorkerServers       `yaml:"worker"`
-	} `yaml:"scalableGroups"`
+	} `yaml:"scalable"`
 }
 
 type sshAuthorizedKeys []ssh.PubKeyData
@@ -62,7 +62,7 @@ type toolsServer struct {
 }
 
 type providerMachineTemplate struct {
-	HetznerCloud hetznerCloudMachine `yaml:"hetznerCloud"`
+	HetznerCloud hetznerCloudMachine `yaml:"hetznerCloud"` //pointer? / yaml anotaion when ignore when not set "omitempty"
 	Digitalocean digitaloceanMachine `yaml:"digitalocean"`
 }
 

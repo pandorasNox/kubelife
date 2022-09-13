@@ -14,15 +14,9 @@ import (
 func Init(ccfg Config, env environment.Config) error {
 	var err error
 
-	// todo: run this only based on provider found in cluster.yaml, not hardcoded
-	err = addSSHKeysToProvider(env.HcloudToken, "hetzner_cloud", ccfg.Cluster.SSHAuthorizedKeys)
+	err = provisionNodes(ccfg, env)
 	if err != nil {
-		return err
-	}
-
-	err = provisionToolsServer(ccfg, env)
-	if err != nil {
-		return fmt.Errorf("couldn't initiate toolsServer: %s", err)
+		return fmt.Errorf("couldn't initiate nodes: %s", err)
 	}
 
 	return nil
@@ -71,6 +65,35 @@ func waitForSSH(user string, remoteAddrs string, timeout time.Duration) error {
 	}
 
 	log.Infof("ssh access is now available for \"%s\"", remoteAddrs)
+
+	return nil
+}
+
+func provisionNodes(ccfg Config, env environment.Config) error {
+	fmt.Println("provisionNodes...")
+
+	// // todo: run this only based on provider found in cluster.yaml, not hardcoded
+	// err = addSSHKeysToProvider(env.HcloudToken, "hetzner_cloud", ccfg.Cluster.SSHAuthorizedKeys)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// err = provisionToolsServer(ccfg, env)
+	// if err != nil {
+	// 	return fmt.Errorf("couldn't initiate toolsServer: %s", err)
+	// }
+
+	// err := ccfg.Cluster.Nodes.Provision(ccfg, env)
+	// if err != nil {
+	// 	return fmt.Errorf("couldn't provison cluster.nodes", err)
+	// }
+
+	staticWorkers := ccfg.Cluster.Nodes.Static.Worker
+	// fmt.Println("staticWorkers[0].NameAddition: ", staticWorkers[0].NameAddition)
+
+	for _, sw := range staticWorkers {
+		fmt.Println("sw: ", sw)
+	}
 
 	return nil
 }
