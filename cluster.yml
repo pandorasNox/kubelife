@@ -1,0 +1,60 @@
+
+---
+version: "0.0.0"
+cluster:
+  name: waikiki
+  ssh_authorized_keys:
+    - name: "tino-home-macbook_t-msk_hxt9Br"
+      public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCkaR6CZNaaAcmpMeAzVnp0ef8BKDwsJsoa4bMHN1s3eA8iJ5eZjd7sUQyA5pcLwePaScCda+VDacSeVLb5DA1Ih/WqeW04pL4xPnUkeQxi4WuOHKgs/YLtEewPCnP5b58PqKKjcgSjJHtC3zyNxQIf+uSfnP3Bz69zfuxbENoAVAvm3BJ9sp1UrzTGqcBZtRIkmdASVjkX5k4/wtFyLmUrsb7xtQ8topbGu7UYceyq4UQrcRnz00aGmF2yOcRBXp4Rhm6TQkxmx62kbgEP4fBdYOJ2QUycb9HfyxIPhPcwyR3tDfz/9iRraKqvFmrd3ShdnIxHde4yE/Qs7+75Gs3z tino-home-macbook_t-msk_hxt9Br"
+      # another field like `disable: true`
+      # which triggers a rolling node update for every node at some point
+      # there always has to be at leas one key which is not disabled
+  nodes:
+    static:
+      worker:
+        - nameAddition: master01
+          providerMachineTemplate: 
+            hetznerCloud:
+              #name: ... taken from node baseName + generic
+              serverType: cx11
+              image:
+                name: ubuntu-20.04
+              location: fsn1 #Falkenstein
+              additionalLabels:
+                foo: bar
+      # (optional) for proxien kubectl commands and providing other tools, e.g. status
+      toolsServer:
+        #name: <clusterName>-clustertools #auto-generated
+        providerMachineTemplate: 
+          hetznerCloud:
+            #name: ... taken from node baseName + generic
+            serverType: cx11
+            image:
+              name: ubuntu-20.04
+            location: fsn1 #Falkenstein
+            additionalLabels:
+              foo: bar
+          digitalocean:
+    scalable:
+      controlPlane:
+        # list of nodes + scale makes sense to group nodes, e.g. for node taints
+        - nameAddition: smth-optional # becomes <clusterName>-<roleName>-<nameAddition>-<rndString>
+          scale: 1
+          providerMachineTemplate:
+            hetznerCloud:
+              #name: ... taken from node baseName + generic
+              serverType: cx11
+              image:
+                name: ubuntu-20.04
+              location: fsn1 #Falkenstein
+              additionalLabels:
+                foo: bar
+        # - nameAddition: smth-optional # becomes <clusterName>-<roleName>-<nameAddition>-<rndString>
+        #   scale: 2
+        #   providerMachineTemplate:
+        #     digitalocean:
+        #       serverType: foo
+      worker:
+        - nameAddition: smth-optional
+
+
